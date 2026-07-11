@@ -1,0 +1,19 @@
+# Ambientes Virtuais e Cache
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Arquivos de Ambiente (Nunca enviar para o Github)
+.env
+
+# Pastas de processamento e dados
+audios_entrada/
+apostilas_prontas/
+temp_chunks/
+transcricoes/
+
+# Logs e outros
+*.log
+.DS_Store

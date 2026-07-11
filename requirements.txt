@@ -1,0 +1,4 @@
+google-generativeai
+pydub
+python-dotenv
+openai
