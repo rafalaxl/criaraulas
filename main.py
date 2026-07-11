@@ -33,7 +33,9 @@ OPENROUTER_DIDACTIC_MODEL = os.getenv("OPENROUTER_DIDACTIC_MODEL", "google/gemin
 # ---------------------------------------------------------
 # 2. CONFIGURAÇÃO DE DIRETÓRIOS
 # ---------------------------------------------------------
-BASE_DIR = Path(r"D:\Criar aulas")
+# Pega o diretório exato onde este arquivo main.py está rodando
+BASE_DIR = Path(__file__).parent.resolve()
+
 AUDIOS_DIR = BASE_DIR / "audios_entrada"
 CHUNKS_DIR = BASE_DIR / "temp_chunks"
 TRANSCRIPTIONS_DIR = BASE_DIR / "transcricoes"
