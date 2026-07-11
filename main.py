@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 from dotenv import load_dotenv
 from pydub import AudioSegment
-import google.generativeai as genai
+from google import genai
 from openai import OpenAI
 
 # ---------------------------------------------------------
@@ -18,7 +18,7 @@ if not GEMINI_API_KEY or not OPENROUTER_API_KEY:
     print("ERRO: As chaves GEMINI_API_KEY e OPENROUTER_API_KEY precisam estar no arquivo .env")
     exit(1)
 
-genai.configure(api_key=GEMINI_API_KEY)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 # Configurar o cliente do OpenRouter usando a biblioteca da OpenAI
 openrouter_client = OpenAI(
@@ -73,27 +73,29 @@ def transcribe_audio_gemini(audio_path):
     """Envia o arquivo MP3 para a API do Google para extrair o texto."""
     print(f"Enviando {audio_path.name} para o Gemini transcrever...")
     
-    # Upload para o File API do Google
-    uploaded_file = genai.upload_file(path=str(audio_path))
+    # Upload para o File API do Google usando o novo SDK google-genai
+    uploaded_file = gemini_client.files.upload(file=audio_path)
     
     # Aguardar processamento do áudio no servidor do Google
-    while uploaded_file.state.name == "PROCESSING":
+    file_info = gemini_client.files.get(name=uploaded_file.name)
+    while file_info.state.name == "PROCESSING":
         print(".", end="", flush=True)
         time.sleep(2)
-        uploaded_file = genai.get_file(uploaded_file.name)
+        file_info = gemini_client.files.get(name=uploaded_file.name)
         
-    if uploaded_file.state.name == "FAILED":
+    if file_info.state.name == "FAILED":
         print(f"\nErro ao processar arquivo no Gemini: {audio_path.name}")
         return ""
     
-    # Pedir a transcrição para o modelo Flash
-    model = genai.GenerativeModel(GEMINI_TRANSCRIPTION_MODEL)
+    # Pedir a transcrição usando o novo SDK
     prompt = "Transcreva este áudio de forma literal, exata e completa em português. Não resuma e não adicione explicações extras."
-    
-    response = model.generate_content([uploaded_file, prompt])
+    response = gemini_client.models.generate_content(
+        model=GEMINI_TRANSCRIPTION_MODEL,
+        contents=[prompt, uploaded_file]
+    )
     
     # Limpar o arquivo do servidor do Google após transcrever
-    genai.delete_file(uploaded_file.name)
+    gemini_client.files.delete(name=uploaded_file.name)
     
     return response.text
 

@@ -1,4 +1,4 @@
-google-generativeai
+google-genai
 pydub
 python-dotenv
 openai
